@@ -1,4 +1,4 @@
-## Android Sample App that demos instant search and pagination using paging library, Retrofit2 and RxJava.
+## Android sample for instant search and pagination using paging library, Retrofit2 and RxJava.
 
 
 This is a network only sample or in other words there's no persistence demostrated.
