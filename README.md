@@ -18,7 +18,7 @@ There are two RxJava chains: one for the initial request called initiator and an
 
 ## Paginator
 
-- BackpressureDrop: The backpressureDrop operator is used to reduce requests frequency. If pagination occurs faster than can be consumed the requests are discarded.
+- BackpressureDrop: The backpressureDrop operator is used to 
 
 - ConcatMap - To concatenateMap operator is used to handle the output of multiple observables to act like a single observable.
   

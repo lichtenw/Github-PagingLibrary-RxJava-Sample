@@ -82,11 +82,10 @@ public class RepoViewModel extends ViewModel {
         // https://blog.mindorks.com/implement-search-using-rxjava-operators-c8882b64fe1d
         Disposable d1 = initiator
                 .debounce(300, TimeUnit.MILLISECONDS)
-                .filter(qd -> qd.query.length() > 2)
+                .filter(qd -> qd.query != null && qd.query.length() > 2)
                 .distinctUntilChanged()
                 .observeOn(Schedulers.io())
                 .switchMap(qd -> Observable.just(fetchRepos(qd)) )
-                .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(qd -> {
                     loading.postValue(false);
                     qd.initialCallback.onResult(qd.response.items, null,qd.pageNum+1);
@@ -94,13 +93,12 @@ public class RepoViewModel extends ViewModel {
                     errors.postValue(error.getMessage());
                 });
 
-        // Using backpressure to reduce requests frequency
-        // Using concatMap() to concatenate the output of multiple observables to act like a single observable
+        // Using backpressure to
+        // Using concatMap() to concatenate multiple requests to act like a single request.
         Disposable d2 = paginator
                 .onBackpressureDrop()
                 .observeOn(Schedulers.io())
                 .concatMap(qd -> Flowable.just(fetchRepos(qd)))
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(qd -> {
                     loading.postValue(false);
                     Integer nextPage = qd.pageNum+1 == lastPage ? null : qd.pageNum+1;
