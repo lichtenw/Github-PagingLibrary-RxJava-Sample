@@ -161,7 +161,7 @@ public class RepoViewModel extends ViewModel {
             Log.d(TAG, "# TOTAL ITEMS: " + repoSearchResponse.total_count);
             String pageLinks = response.headers().get("Link");
             if (repoSearchResponse.total_count == 0 || pageLinks == null) {
-                throw new Exception("Github Query Request Failed\n\nNo Items For Query '" + qd.query + "'");
+                throw new Exception("Github Query Request Returned\nNo Items For Query '" + qd.query + "'");
             }
             // Find the last page number...
             Log.d(TAG, "PAGE LINKS: " + pageLinks);
@@ -173,6 +173,7 @@ public class RepoViewModel extends ViewModel {
                     lastPage = Integer.parseInt(num);
                     Log.d(TAG, "LAST PAGE: " + lastPage);
                 } catch (Exception ex) {
+                    Log.e(TAG, "Failed to parse last page", ex);
                     lastPage = null;
                 }
             }
