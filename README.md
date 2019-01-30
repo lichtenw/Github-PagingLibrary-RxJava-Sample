@@ -1,5 +1,6 @@
-## Github Client Android sample showing instant search and pagination using the Android Jetpack Architecture components Paging Library and LiveData.  As well as Retrofit2 and RxJava.
+## Github client Android Java sample showing instant search and pagination.
 
+Utilizes Android JetPack Architecture Compnents: Paging Library, ViewModel, LiveData.  And also utilizes Retrofit2 and RxJava.
 
 ## RepoViewModel
 
