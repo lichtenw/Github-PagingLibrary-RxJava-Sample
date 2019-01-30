@@ -39,6 +39,10 @@ public class RepoViewModel extends ViewModel {
 
     static final String TAG = RepoViewModel.class.getSimpleName();
 
+    private final static int INITIAL_LOAD_SIZE = 60;
+    private final static int PAGE_SIZE         = 30;
+    private final static int PREFETCH_DISTANCE = 10;
+
     private LiveData<PagedList<Repo>> repoList;
     private GithubDataSourceFactory dataSourceFactory;
     private PublishSubject<RepoQueryData> initiator = PublishSubject.create();
@@ -46,7 +50,6 @@ public class RepoViewModel extends ViewModel {
     private MutableLiveData<String> errors = new MutableLiveData<>();
     private MutableLiveData<Boolean> loading = new MutableLiveData<>();
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private Integer lastPage;
 
 
     private GithubServiceAPI githubServiceAPI;
@@ -61,11 +64,11 @@ public class RepoViewModel extends ViewModel {
         dataSourceFactory = new GithubDataSourceFactory(initiator, paginator);
 
         PagedList.Config config = new PagedList.Config.Builder()
-                .setPageSize(15)
+                .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .setInitialLoadSizeHint(60)
-                .setPrefetchDistance(10)
-                .setMaxSize(1000)
+                .setInitialLoadSizeHint(INITIAL_LOAD_SIZE)
+                .setPrefetchDistance(PREFETCH_DISTANCE)
+                .setMaxSize(INITIAL_LOAD_SIZE*10)
                 .build();
         repoList = new LivePagedListBuilder<>(dataSourceFactory, config).build();
     }
@@ -77,31 +80,21 @@ public class RepoViewModel extends ViewModel {
         // Using filter() to reduce requests until there is more than 2 characters
         // Using distinctUtilChanged() to ignore making same requests
         // Using switchMap() to cancel/discard previous requests and return only the latest response
-        // Relevant article here...
-        // https://blog.mindorks.com/implement-search-using-rxjava-operators-c8882b64fe1d
         Disposable d1 = initiator
-                .debounce(300, TimeUnit.MILLISECONDS)
+                .debounce(400, TimeUnit.MILLISECONDS)
                 .filter(qd -> qd.query != null && qd.query.length() > 2)
                 .distinctUntilChanged()
                 .observeOn(Schedulers.io())
                 .switchMap(qd -> Observable.just(fetchRepos(qd)) )
-                .subscribe(qd -> {
-                    onResult(qd);
-                }, error -> {
-                    errors.postValue(error.getMessage());
-                });
+                .subscribe(qd -> onResult(qd), error -> onError(error));
 
-        // Using backpressure to drop requests if it can't handle more than it's capacity 128 requests
+        // Using backPressureDrop() to drop requests if it can't handle more than it's capacity of 128 requests
         // Using concatMap() to concatenate multiple requests to act like a single request.
         Disposable d2 = paginator
                 .onBackpressureDrop()
                 .observeOn(Schedulers.io())
                 .concatMap(qd -> Flowable.just(fetchRepos(qd)))
-                .subscribe(qd -> {
-                    onResult(qd);
-                }, error -> {
-                    errors.postValue(error.getMessage());
-                });
+                .subscribe(qd -> onResult(qd), error -> onError(error));
 
         compositeDisposable.add(d1);
         compositeDisposable.add(d2);
@@ -134,7 +127,6 @@ public class RepoViewModel extends ViewModel {
 
 
     public void resetQuery() {
-        lastPage = null;
         submitQuery("");
     }
 
@@ -148,12 +140,20 @@ public class RepoViewModel extends ViewModel {
 
     private void onResult(RepoQueryData qd) {
         loading.postValue(false);
+        if (qd.response == null || qd.response.items == null) {
+            return;
+        }
+        //Log.d(TAG, "# TOTAL COUNT: " + qd.response.total_count);
         if (qd.initialCallback != null) {
             qd.initialCallback.onResult(qd.response.items, null,qd.pageNum+1);
         } else {
-            Integer nextPage = qd.pageNum+1 == lastPage ? null : qd.pageNum+1;
-            qd.pagingCallback.onResult(qd.response.items, nextPage);
+            qd.pagingCallback.onResult(qd.response.items, qd.pageNum+1);
         }
+    }
+
+
+    private void onError(Throwable error) {
+        errors.postValue(error.getMessage());
     }
 
 
@@ -164,35 +164,18 @@ public class RepoViewModel extends ViewModel {
         Call<RepoSearchResponse> call = githubServiceAPI.getRepos(qd.query, qd.loadSize, qd.pageNum);
         Response<RepoSearchResponse> response = call.execute();
         if (response.code() == 200) {
-            RepoSearchResponse repoSearchResponse = response.body();
-            Log.d(TAG, "# TOTAL ITEMS: " + repoSearchResponse.total_count);
-            String pageLinks = response.headers().get("Link");
-            if (repoSearchResponse.total_count == 0 || pageLinks == null) {
-                throw new Exception("Github Query Request Returned\nNo Items For Query '" + qd.query + "'");
-            }
-            // Find the last page number...
-            Log.d(TAG, "PAGE LINKS: " + pageLinks);
-            int idx = pageLinks.lastIndexOf("rel=\"last\"");
-            if (idx != -1) {
-                idx = pageLinks.lastIndexOf("page=", idx);
-                try {
-                    String num = pageLinks.substring(idx+5,pageLinks.indexOf(">",idx+5));
-                    lastPage = Integer.parseInt(num);
-                    Log.d(TAG, "LAST PAGE: " + lastPage);
-                } catch (Exception ex) {
-                    Log.e(TAG, "Failed to parse last page", ex);
-                    lastPage = null;
-                }
-            }
-            qd.response = repoSearchResponse;
+            qd.response = response.body();
             return qd;
-        } else if (response.code() == 403) {
-            lastPage = null;
-            String limit = response.headers().get("X-RateLimit-Remaining");
-            if (Integer.parseInt(limit) == 0) {
-                throw new Exception("Github Query Request Failed\n\nToo Many Requests Per Minute");
+        } else {
+            if (response.code() == 403) {
+                String msg = "Github Query Request Failed\n\n";
+                if (response.headers().get("X-RateLimit-Remaining").equals("0")) {
+                    msg += "Too Many Requests Per Minute";
+                }
+                onError(new Exception(msg));
+            } else {
+                onError(new Exception("Github Query Request Failed"));
             }
-            throw new Exception("Http Error " + response.code());
         }
         return qd;
     }

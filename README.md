@@ -1,22 +1,22 @@
 ## Github Client Android sample showing instant search and pagination using the Android Jetpack Architecture components Paging Library and LiveData.  As well as Retrofit2 and RxJava.
 
 
-# RepoViewModel
+## RepoViewModel
 
 - Initializes the Data Source Factory.
 
-- Initializes the LiveData objects that communicate back to the main activity including the PagedList. 
+- Initializes the LiveData objects that the main activity observes. 
 
-- Initializes the RxJava chains: one for the initial request and a second for the pagination request.
+- Initializes the RxJava publishers: one for the initial request and another for the pagination request.
 
 - Initializes Retrofit2 and the Github Service API.
 
 - Fetches the Github Repo data.
 
 
-# RxJava
+## RxJava
 
-## Initiator - PublishSubject
+### Initiator - PublishSubject
 
 - Debounce: The debounce operator is used with a time constant. The debounce operator handles the case when the user types “a”, “ab”, “abc”, in a very short time. So there will be too much network calls. But the user is finally interested in the result of the search “abc”. So, you must discard the results of “a” and “ab”. Ideally, there should be no network calls for “a” and “ab” as the user typed those in very short time. So, the debounce operator comes to the rescue. The debounce will wait for the provided time for doing anything, if any other search query comes in between that time, it will ignore the previous item and start waiting for that time again with the new search query. If nothing new comes in that given constant time, it will proceed with that search query for further processing. So, debounce only emit an item from an Observable if a particular timespan has passed without it emitting an another item.
 
@@ -27,7 +27,7 @@
 - SwitchMap: The switchMap operator is used to avoid the network call results which are not needed more for displaying to the user. Let say the last search query was “ab” and there is an ongoing network call for “ab” and the user typed “abc”. Then you are no more interested in the result of “ab”. You are only interested in the result of “abc”. So, the switchMap comes to the rescue. It only provides the result for the last search query(most recent) and ignores the rest.
 
 
-## Paginator - Flowable
+### Paginator - PublishProcessor
 
 - BackpressureDrop: The backpressureDrop operator is used to drop requests if it can't handle more than it's capacity 128 requests
 
