@@ -11,7 +11,7 @@ import retrofit2.http.Query;
 // API Example:
 // https://api.github.com/search/repositories?q=tetris+language:assembly&sort=stars&order=desc
 //
-public interface GithubAPI {
+public interface GithubServiceAPI {
 
     String BASE_URL = "https://api.github.com/";
 

@@ -15,7 +15,7 @@ public class RepoQueryData {
     public final String query;
     public final int loadSize, pageNum;
     public PageKeyedDataSource.LoadInitialCallback<Integer,Repo> initialCallback;
-    public PageKeyedDataSource.LoadCallback<Integer,Repo> loadCallback;
+    public PageKeyedDataSource.LoadCallback<Integer,Repo> pagingCallback;
     public RepoSearchResponse response;
 
 
@@ -33,6 +33,6 @@ public class RepoQueryData {
 
     public RepoQueryData(String query, int loadSize, int pageNum, PageKeyedDataSource.LoadCallback callback) {
         this(query, loadSize, pageNum);
-        this.loadCallback = callback;
+        this.pagingCallback = callback;
     }
 }
