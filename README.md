@@ -1,6 +1,6 @@
 ## Github client Android Java sample showing instant search and pagination.
 
-Utilizes Android JetPack Architecture Compnents: Paging Library, ViewModel, LiveData.  And also utilizes Retrofit2 and RxJava.
+Utilizes Android JetPack Architecture Components: Paging Library, ViewModel, LiveData.  And also utilizes Retrofit2 and RxJava.  This is a network only sample, there's no persistent storage.
 
 ## RepoViewModel
 
@@ -30,9 +30,9 @@ Utilizes Android JetPack Architecture Compnents: Paging Library, ViewModel, Live
 
 ### Paginator - PublishProcessor
 
-- BackpressureDrop: The backpressureDrop operator is used to drop requests if it can't handle more than it's capacity 128 requests
+- BackpressureDrop: The backpressureDrop operator is used to drop requests if it can't handle more than it's capacity 128 requests.
 
-- ConcatMap - To concatenateMap operator is used to handle the output of multiple observables to act like a single observable and preserves the order of the requests.
+- ConcatMap - The concatenateMap operator is used to handle the output of multiple observables to act like a single observable and preserves the order of the requests.
   
 
 ## Screenshot
@@ -49,5 +49,4 @@ Licensed to the Apache Software Foundation (ASF) under one or more contributor l
 http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-
 

@@ -1,6 +1,5 @@
 package com.lichtenw.android.paging.data;
 
-import android.util.Log;
 import com.lichtenw.android.paging.model.Repo;
 import androidx.paging.DataSource;
 import io.reactivex.processors.PublishProcessor;
@@ -29,8 +28,8 @@ public class GithubDataSourceFactory extends DataSource.Factory<Integer, Repo> {
 
     @Override
     public DataSource<Integer, Repo> create() {
-        Log.d(TAG, "Create DataSource " + query);
-        GithubDataSource source = new GithubDataSource();
+        //Log.d(TAG, "Create DataSource " + query);
+        GithubPagedKeyDataSource source = new GithubPagedKeyDataSource();
         source.setPublishers(initiator, paginator);
         source.setQuery(query);
         return source;

@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(findViewById(R.id.toolbar));
         getSupportActionBar().setTitle(R.string.app_name);
 
-        RepoAdapter adapter = new RepoAdapter();
+        RepoPagedListAdapter adapter = new RepoPagedListAdapter();
 
         viewModel = ViewModelProviders.of(this).get(RepoViewModel.class);
         viewModel.getRepos().observe(this, adapter::submitList);
@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
 
-        EditText editText = findViewById(R.id.edit_text);
+        final EditText editText = findViewById(R.id.edit_text);
         editText.addTextChangedListener(new TextWatcher() {
 
             @Override
@@ -67,19 +67,19 @@ public class MainActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.clear_img).setOnClickListener((v) -> {
-            ((EditText) findViewById(R.id.edit_text)).setText("");
+            editText.setText("");
             viewModel.resetQuery();
             progressBar.setVisibility(View.INVISIBLE);
         });
     }
 
 
-    public void onProgress(Boolean b) {
+    private void onProgress(Boolean b) {
         progressBar.setVisibility(b ? View.VISIBLE : View.INVISIBLE);
     }
 
 
-    public void showError(String error) {
+    private void showError(String error) {
         progressBar.setVisibility(View.INVISIBLE);
         new AlertDialog.Builder(this)
                 .setTitle("Error")

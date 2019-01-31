@@ -10,6 +10,7 @@ import com.lichtenw.android.paging.data.GithubDataSourceFactory;
 import com.lichtenw.android.paging.data.RepoQueryData;
 import com.lichtenw.android.paging.model.Repo;
 
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import androidx.lifecycle.LiveData;
@@ -39,9 +40,7 @@ public class RepoViewModel extends ViewModel {
 
     static final String TAG = RepoViewModel.class.getSimpleName();
 
-    private final static int INITIAL_LOAD_SIZE = 60;
-    private final static int PAGE_SIZE         = 30;
-    private final static int PREFETCH_DISTANCE = 10;
+    private final static int PAGE_SIZE = 30;
 
     private LiveData<PagedList<Repo>> repoList;
     private GithubDataSourceFactory dataSourceFactory;
@@ -66,11 +65,13 @@ public class RepoViewModel extends ViewModel {
         PagedList.Config config = new PagedList.Config.Builder()
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
-                .setInitialLoadSizeHint(INITIAL_LOAD_SIZE)
-                .setPrefetchDistance(PREFETCH_DISTANCE)
-                .setMaxSize(INITIAL_LOAD_SIZE*10)
+                .setInitialLoadSizeHint(PAGE_SIZE*2)
+                .setPrefetchDistance(PAGE_SIZE/3)
+                .setMaxSize(PAGE_SIZE*10)
                 .build();
-        repoList = new LivePagedListBuilder<>(dataSourceFactory, config).build();
+        repoList = new LivePagedListBuilder<>(dataSourceFactory, config)
+                .setFetchExecutor(Executors.newFixedThreadPool(3))
+                .build();
     }
 
 

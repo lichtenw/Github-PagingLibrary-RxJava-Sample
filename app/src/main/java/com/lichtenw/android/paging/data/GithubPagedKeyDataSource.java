@@ -13,16 +13,16 @@ import io.reactivex.subjects.PublishSubject;
 /**
  * Network only data source for pagination.
  */
-public class GithubDataSource extends PageKeyedDataSource<Integer, Repo> {
+public class GithubPagedKeyDataSource extends PageKeyedDataSource<Integer, Repo> {
 
-    static final String TAG = GithubDataSource.class.getSimpleName();
+    static final String TAG = GithubPagedKeyDataSource.class.getSimpleName();
 
     private String query;
     private PublishSubject<RepoQueryData> initiator;
     private PublishProcessor<RepoQueryData> paginator;
 
 
-    public GithubDataSource() {
+    public GithubPagedKeyDataSource() {
     }
 
 
