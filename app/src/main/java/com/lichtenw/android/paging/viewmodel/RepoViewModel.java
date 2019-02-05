@@ -34,7 +34,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 
 /**
- * View model
+ * Repo View Model manages tasks related to network communication, data manipulation, live data
+ * updates back to the UI.
  */
 public class RepoViewModel extends ViewModel {
 
@@ -78,9 +79,9 @@ public class RepoViewModel extends ViewModel {
     private void subscribeForData() {
 
         // Using debounce() to reduce requests frequency on key input
-        // Using filter() to reduce requests until there is more than 2 characters
+        // Using filter() to reduce requests until there are more than 2 characters
         // Using distinctUtilChanged() to ignore making same requests
-        // Using switchMap() to cancel/discard previous requests and return only the latest response
+        // Using switchMap() to discard ongoing requests and return only the latest response
         Disposable d1 = initiator
                 .debounce(400, TimeUnit.MILLISECONDS)
                 .filter(qd -> qd.query != null && qd.query.length() > 2)
@@ -144,7 +145,7 @@ public class RepoViewModel extends ViewModel {
         if (qd.response == null || qd.response.items == null) {
             return;
         }
-        //Log.d(TAG, "# TOTAL COUNT: " + qd.response.total_count);
+        Log.d(TAG, "onResult(). Total count: " + qd.response.total_count);
         if (qd.initialCallback != null) {
             qd.initialCallback.onResult(qd.response.items, null,qd.pageNum+1);
         } else {
@@ -154,6 +155,8 @@ public class RepoViewModel extends ViewModel {
 
 
     private void onError(Throwable error) {
+        Log.e(TAG, "Error", error);
+        loading.postValue(false);
         errors.postValue(error.getMessage());
     }
 
@@ -168,15 +171,13 @@ public class RepoViewModel extends ViewModel {
             qd.response = response.body();
             return qd;
         } else {
+            String msg = "\nGithub Query Request Failed\n\n";
             if (response.code() == 403) {
-                String msg = "Github Query Request Failed\n\n";
                 if (response.headers().get("X-RateLimit-Remaining").equals("0")) {
-                    msg += "Too Many Requests Per Minute";
+                    msg += "Too Many Requests Per Minute\n";
                 }
-                onError(new Exception(msg));
-            } else {
-                onError(new Exception("Github Query Request Failed"));
             }
+            onError(new Exception(msg));
         }
         return qd;
     }

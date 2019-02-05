@@ -80,10 +80,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void showError(String error) {
-        progressBar.setVisibility(View.INVISIBLE);
         new AlertDialog.Builder(this)
                 .setTitle("Error")
-                .setMessage("\n" + error + "\n")
+                .setMessage(error)
                 .setCancelable(false)
                 .setPositiveButton(android.R.string.ok, null)
                 .show();

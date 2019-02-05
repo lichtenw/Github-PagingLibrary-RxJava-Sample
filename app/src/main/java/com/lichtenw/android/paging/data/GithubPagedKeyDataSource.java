@@ -39,7 +39,7 @@ public class GithubPagedKeyDataSource extends PageKeyedDataSource<Integer, Repo>
 
     public void loadInitial(@NonNull PageKeyedDataSource.LoadInitialParams<Integer> params,
                             @NonNull LoadInitialCallback<Integer, Repo> callback) {
-        Log.d(TAG, "loadInitial");
+        Log.d(TAG, "loadInitial " + query);
         initiator.onNext(new RepoQueryData(query, params.requestedLoadSize, 1, callback));
     }
 
